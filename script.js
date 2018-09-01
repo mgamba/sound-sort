@@ -92,7 +92,7 @@ function playback() {
     oscillator1.frequency.value = arr[i] * arr[i] / 4 + 100;
     oscillator2.frequency.value = arr[j] * arr[j] / 4 + 100;
     updateTable(arr, i, j);
-    setTimeout(playback, 100);
+    setTimeout(playback, 50);
   } else {
     oscillator1.stop();
     oscillator2.stop();
