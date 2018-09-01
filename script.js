@@ -52,6 +52,61 @@ function qsort(a, low, high) {
   qsort(a, i, high);
 }
 
+function mergesort(a, low, high) {
+    if (a.length < 2) {
+        return
+    }
+
+    if (low === undefined) {
+        low = 0;
+        high = a.length - 1;
+    }
+
+    if (low >= high) {
+        return;
+    }
+
+    let mid = Math.floor((low + high) / 2);
+    mergesort(a, low, mid);
+    mergesort(a, mid+1, high);
+
+    // merge ...
+    let temp = a.slice(low, high+1);
+    let temp_low = 0;
+    let temp_high = high - low;
+    let temp_mid = Math.floor((temp_low + temp_high) / 2);
+    let temp_left = temp_low;
+    let temp_right = temp_mid + 1;
+
+    let temp_offset = low;
+
+    while (temp_left <= temp_mid && temp_right <= temp_high) {
+        if (temp[temp_left] <= temp[temp_right]) {
+            a[low] = temp[temp_left];
+            notes.push([temp_offset+temp_right, temp_offset+temp_left, a.slice()]);
+            temp_left += 1;
+        } else {
+            a[low] = temp[temp_right];
+            notes.push([temp_offset+temp_right, temp_offset+temp_left, a.slice()]);
+            temp_right += 1;
+        }
+        low += 1;
+    }
+
+    while (temp_left <= temp_mid) {
+        a[low] = temp[temp_left];
+        notes.push([Math.min(temp_offset+temp_right, a.length-1), temp_offset+temp_left, a.slice()]);
+        low += 1;
+        temp_left += 1;
+    }
+    while (temp_right <= temp_high) {
+        a[low] = temp[temp_right];
+        notes.push([temp_offset+temp_right, Math.min(temp_offset+temp_left, a.length-1), a.slice()]);
+        low += 1;
+        temp_right += 1;
+    }
+}
+
 function shuffle(a) {
     let j, x, i;
     for (i = a.length - 1; i > 0; i--) {
@@ -104,7 +159,7 @@ for (let i=1; i<=100; i++) {
   a.push(i);
 }
 shuffle(a);
-qsort(a);
+mergesort(a);
 
 oscillator1.start();
 oscillator2.start();
