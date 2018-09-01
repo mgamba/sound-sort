@@ -5,7 +5,7 @@ var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 var oscillator1 = audioCtx.createOscillator();
 var oscillator2 = audioCtx.createOscillator();
 
-oscillator1.type = 'square';
+oscillator1.type = 'sine';
 oscillator2.type = 'square';
 oscillator1.connect(audioCtx.destination);
 oscillator2.connect(audioCtx.destination);
@@ -89,8 +89,8 @@ function updateTable(arr, i1, i2) {
 function playback() {
   if (notes.length) {
     let [i, j, arr] = notes.shift();
-    oscillator1.frequency.value = arr[i] * 10 + 100;
-    oscillator2.frequency.value = arr[j] * 10 + 100;
+    oscillator1.frequency.value = arr[i] * arr[i] / 4 + 100;
+    oscillator2.frequency.value = arr[j] * arr[j] / 4 + 100;
     updateTable(arr, i, j);
     setTimeout(playback, 100);
   } else {
