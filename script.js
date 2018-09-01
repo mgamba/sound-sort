@@ -2,13 +2,8 @@
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // create Oscillator node
-var oscillator1 = audioCtx.createOscillator();
-var oscillator2 = audioCtx.createOscillator();
-
-oscillator1.type = 'sine';
-oscillator2.type = 'square';
-oscillator1.connect(audioCtx.destination);
-oscillator2.connect(audioCtx.destination);
+let oscillator1 = {stop: function(){}};
+let oscillator2 = {stop: function(){}};
 
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
@@ -17,7 +12,8 @@ function randint(low, high) {
   return Math.floor(Math.random()*((high-low)+1))+low;
 }
 const notes = [];
-function qsort(a, low, high) {
+const algos = [];
+algos.qsort = function (a, low, high) {
   if (low === undefined) {
     low = 0;
     high = a.length - 1;
@@ -48,11 +44,11 @@ function qsort(a, low, high) {
         j -= 1;
       }
   }
-  qsort(a, low, j);
-  qsort(a, i, high);
+  algos.qsort(a, low, j);
+  algos.qsort(a, i, high);
 }
 
-function mergesort(a, low, high) {
+algos.mergesort = function (a, low, high) {
     if (a.length < 2) {
         return
     }
@@ -67,8 +63,8 @@ function mergesort(a, low, high) {
     }
 
     let mid = Math.floor((low + high) / 2);
-    mergesort(a, low, mid);
-    mergesort(a, mid+1, high);
+    algos.mergesort(a, low, mid);
+    algos.mergesort(a, mid+1, high);
 
     // merge ...
     let temp = a.slice(low, high+1);
@@ -119,12 +115,14 @@ function shuffle(a) {
 }
 
 function updateTable(arr, i1, i2) {
+  let lineWidth = canvas.width / arr.length;
+  let lineHeight = canvas.height / arr.length;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.beginPath();
   ctx.lineWidth=1;
   for (let j=0; j < arr.length; j++) {
-    ctx.moveTo(j*2, canvas.height);
-    ctx.lineTo(j*2, canvas.height-arr[j]);
+    ctx.moveTo(j*lineWidth, canvas.height);
+    ctx.lineTo(j*lineWidth, canvas.height-(lineHeight*arr[j]));
   }
   ctx.fillStyle = "black";
   ctx.strokeStyle = "black";
@@ -132,35 +130,69 @@ function updateTable(arr, i1, i2) {
 
   ctx.beginPath();
   ctx.lineWidth=2;
-  ctx.moveTo(i1*2, canvas.height);
-  ctx.lineTo(i1*2, canvas.height-arr[i1]);
-  ctx.moveTo(i2*2, canvas.height);
-  ctx.lineTo(i2*2, canvas.height-arr[i2]);
+  ctx.moveTo(i1*lineWidth, canvas.height);
+  ctx.lineTo(i1*lineWidth, canvas.height-(lineHeight*arr[i1]));
+  ctx.moveTo(i2*lineWidth, canvas.height);
+  ctx.lineTo(i2*lineWidth, canvas.height-(lineHeight*arr[i2]));
   ctx.fillStyle = "red";
   ctx.strokeStyle = "red";
   ctx.stroke();
 }
 
+let timeout;
 function playback() {
-  if (notes.length) {
+  if (notes.length > 0) {
     let [i, j, arr] = notes.shift();
     oscillator1.frequency.value = arr[i] * arr[i] / 4 + 100;
     oscillator2.frequency.value = arr[j] * arr[j] / 4 + 100;
     updateTable(arr, i, j);
-    setTimeout(playback, 50);
+    timeout = setTimeout(playback, 50);
   } else {
     oscillator1.stop();
     oscillator2.stop();
   }
 }
 
-const a = [];
-for (let i=1; i<=100; i++) {
-  a.push(i);
+for (let k in algos) {
+  let node = document.createElement("li");
+  let link = document.createElement("a");
+  link.href = "#";
+  link.setAttribute('data-algo', k);
+  let textnode = document.createTextNode(k);
+  link.appendChild(textnode);
+  node.appendChild(link);
+  document.getElementById("algo-list").appendChild(node);
 }
-shuffle(a);
-mergesort(a);
 
-oscillator1.start();
-oscillator2.start();
-playback();
+function startAlgo(algoName) {
+  clearTimeout(timeout);
+  notes.length = 0;
+  oscillator1.stop();
+  oscillator2.stop();
+
+  oscillator1 = audioCtx.createOscillator();
+  oscillator2 = audioCtx.createOscillator();
+
+  oscillator1.type = 'sine';
+  oscillator2.type = 'square';
+
+  oscillator1.connect(audioCtx.destination);
+  oscillator2.connect(audioCtx.destination);
+
+  const a = [];
+  for (let i=1; i<=100; i++) {
+    a.push(i);
+  }
+  shuffle(a);
+  algos[algoName](a);
+
+  oscillator1.start();
+  oscillator2.start();
+  playback();
+}
+
+document.querySelectorAll("#algo-list a").forEach(function(link) {
+  link.addEventListener("click", function(e){
+    startAlgo(e.target.getAttribute('data-algo'))
+  });
+});
