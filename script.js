@@ -1,3 +1,5 @@
+'use strict';
+
 // create web audio api context
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -101,6 +103,26 @@ algos.mergesort = function (a, low, high) {
         low += 1;
         temp_right += 1;
     }
+}
+
+algos.selectionsort = function (a) {
+  for (let i=0; i < a.length; i++) {
+    let minj = i;
+    for (let j=i+1; j < a.length; j++) {
+      if (a[j] < a[minj]) {
+        minj = j;
+      }
+    }
+    if (i !== minj) {
+      console.log('swap', a[i], a[minj]);
+
+      let temp = a[minj];
+      a[minj] = a[i];
+      a[i] = temp;
+      //[a[i], a[minj]] = [a[minj], a[i]];
+      notes.push([i, minj, a.slice()]);
+    }
+  }
 }
 
 function shuffle(a) {
