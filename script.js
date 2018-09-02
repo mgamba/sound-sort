@@ -114,13 +114,22 @@ algos.selectionsort = function (a) {
       }
     }
     if (i !== minj) {
-      console.log('swap', a[i], a[minj]);
-
       let temp = a[minj];
       a[minj] = a[i];
       a[i] = temp;
       //[a[i], a[minj]] = [a[minj], a[i]];
       notes.push([i, minj, a.slice()]);
+    }
+  }
+}
+
+algos.insertionsort = function (a) {
+  for (let i=1; i < a.length; i++) {
+    let j = i;
+    while (a[j-1] > a[j] && j > 0) {
+      notes.push([j-1, j, a.slice()]);
+      [a[j], a[j-1]] = [a[j-1], a[j]];
+      j--;
     }
   }
 }
